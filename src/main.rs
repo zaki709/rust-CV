@@ -53,6 +53,7 @@ fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<Keyp
         .collect();
 
     Ok((keypoints, descriptors))
+    // FIXME: keypointsの型を確認
 }
 
 fn main() {
