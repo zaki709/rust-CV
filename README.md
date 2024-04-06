@@ -1,6 +1,6 @@
 # Overview
 
-RustでOpenCVを扱うテスト用
+RustでOpenCVを扱うテスト用リポジトリ
 
 # Usage
 
