@@ -12,7 +12,7 @@ struct Keypoint {
     angle: f32,
 }
 
-fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<Keypoint>, core::Mat)> {
+fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<crate::Keypoint>, core::Mat)> {
     let descriptor_type = features2d::AKAZE_DescriptorType::DESCRIPTOR_MLDB;
     let descriptor_size = 0; // MLDBのデフォルトサイズ
     let descriptor_channels = 3; // MLDBデフォルトチャンネル数
@@ -53,10 +53,11 @@ fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<Keyp
         .collect();
 
     Ok((keypoints, descriptors))
-    // FIXME: keypointsの型を確認
+    
 }
 
 fn main() {
-    let img = imgcodecs::imread("path/to/image.jpg", imgcodecs::IMREAD_GRAYSCALE).unwrap();
-    extract_feature_points::<core::KeyPoint>(&img).unwrap();
+    let img = imgcodecs::imread("assets/sample_0.png", imgcodecs::IMREAD_GRAYSCALE).unwrap();
+    let result = extract_feature_points::<core::KeyPoint>(&img).unwrap();
+    println!("{:?}", result.0);
 }
