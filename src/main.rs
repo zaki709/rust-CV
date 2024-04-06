@@ -4,12 +4,17 @@ use opencv::features2d;
 use opencv::imgcodecs;
 use opencv::prelude::*;
 use opencv::core::Vector;
+use serde_json;
 
 #[derive(Debug,Clone,Copy)]
 struct Keypoint {
     x: f32,
     y: f32,
     angle: f32,
+}
+
+struct KeypointList {
+    keypoints: Vec<crate::Keypoint>,
 }
 
 fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<crate::Keypoint>, core::Mat)> {
@@ -56,8 +61,21 @@ fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<crat
     
 }
 
+
+fn save_json(data: Vec<crate::Keypoint>) -> std::io::Result<()>{
+    let keypoint_list = crate::KeypointList {
+        keypoints: data,
+    };
+    let json_data = serde_json::to_string(&keypoint_list).unwrap();
+    write!(json_data).unwrap();
+    // FIXME ここでjsonファイルを保存する
+    Ok(())
+}
+
+
 fn main() {
     let img = imgcodecs::imread("assets/sample_0.png", imgcodecs::IMREAD_GRAYSCALE).unwrap();
     let result = extract_feature_points::<core::KeyPoint>(&img).unwrap();
-    println!("{:?}", result.0);
+    save_json(result.0).unwrap();
 }
+
