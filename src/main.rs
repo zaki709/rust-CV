@@ -69,7 +69,7 @@ fn save_json(data: Vec<crate::Keypoint>) -> std::io::Result<()> {
         .create(true)
         .read(true)
         .write(true)
-        .open("serialized_data.json")?;
+        .open("output/serialized_data.json")?;
     let keypoint_list = crate::KeypointList { keypoints: data };
     let json_data = serde_json::to_string(&keypoint_list).unwrap();
     writeln!(&file, "{}", json_data).unwrap();
