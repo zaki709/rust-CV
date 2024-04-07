@@ -1,23 +1,29 @@
 extern crate opencv;
 use opencv::core;
+use opencv::core::Vector;
 use opencv::features2d;
 use opencv::imgcodecs;
 use opencv::prelude::*;
-use opencv::core::Vector;
+use serde;
 use serde_json;
+use std::fs::OpenOptions;
+use std::io::Write;
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 struct Keypoint {
     x: f32,
     y: f32,
     angle: f32,
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct KeypointList {
     keypoints: Vec<crate::Keypoint>,
 }
 
-fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<crate::Keypoint>, core::Mat)> {
+fn extract_feature_points<Keypoint>(
+    img: &core::Mat,
+) -> opencv::Result<(Vec<crate::Keypoint>, core::Mat)> {
     let descriptor_type = features2d::AKAZE_DescriptorType::DESCRIPTOR_MLDB;
     let descriptor_size = 0; // MLDBのデフォルトサイズ
     let descriptor_channels = 3; // MLDBデフォルトチャンネル数
@@ -48,34 +54,30 @@ fn extract_feature_points<Keypoint>(img: &core::Mat) -> opencv::Result<(Vec<crat
 
     let keypoints: Vec<crate::Keypoint> = keypoints
         .iter()
-        .map(|kp| {
-            crate::Keypoint {
-                x: kp.pt().x,
-                y: kp.pt().y,
-                angle: kp.angle(),
-            }
+        .map(|kp| crate::Keypoint {
+            x: kp.pt().x,
+            y: kp.pt().y,
+            angle: kp.angle(),
         })
         .collect();
 
     Ok((keypoints, descriptors))
-    
 }
 
-
-fn save_json(data: Vec<crate::Keypoint>) -> std::io::Result<()>{
-    let keypoint_list = crate::KeypointList {
-        keypoints: data,
-    };
+fn save_json(data: Vec<crate::Keypoint>) -> std::io::Result<()> {
+    let file = OpenOptions::new()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open("serialized_data.json")?;
+    let keypoint_list = crate::KeypointList { keypoints: data };
     let json_data = serde_json::to_string(&keypoint_list).unwrap();
-    write!(json_data).unwrap();
-    // FIXME ここでjsonファイルを保存する
+    writeln!(&file, "{}", json_data).unwrap();
     Ok(())
 }
-
 
 fn main() {
     let img = imgcodecs::imread("assets/sample_0.png", imgcodecs::IMREAD_GRAYSCALE).unwrap();
     let result = extract_feature_points::<core::KeyPoint>(&img).unwrap();
     save_json(result.0).unwrap();
 }
-
